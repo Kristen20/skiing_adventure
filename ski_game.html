@@ -1,0 +1,2241 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>滑雪大冒险</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            touch-action: manipulation;
+            -webkit-tap-highlight-color: transparent;
+        }
+        
+        body {
+            font-family: 'Arial Rounded MT Bold', 'Arial', sans-serif;
+            background: linear-gradient(to bottom, #87CEEB, #E0F6FF);
+            color: #333;
+            overflow: hidden;
+            height: 100vh;
+            width: 100vw;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            padding: 10px;
+        }
+        
+        .game-container {
+            width: 100%;
+            max-width: 1000px;
+            height: calc(100vh - 150px);
+            min-height: 500px;
+            position: relative;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 15px 35px rgba(0, 0, 0, 0.3);
+            background-color: #fff;
+        }
+        
+        #gameCanvas {
+            display: block;
+            background: linear-gradient(to bottom, #87CEEB 30%, #ffffff 100%);
+            width: 100%;
+            height: 100%;
+        }
+        
+        .game-header {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 12px 20px;
+            margin-bottom: 10px;
+            background-color: rgba(255, 255, 255, 0.95);
+            border-radius: 15px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.15);
+            flex-wrap: wrap;
+        }
+        
+        .game-title {
+            font-size: 1.8rem;
+            color: #2C3E50;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.2);
+            display: flex;
+            align-items: center;
+            margin-right: 15px;
+        }
+        
+        .game-title i {
+            margin-right: 10px;
+            color: #3498DB;
+        }
+        
+        .score-container {
+            display: flex;
+            gap: 12px;
+            flex-wrap: wrap;
+        }
+        
+        .score-box {
+            background: linear-gradient(to bottom, #3498DB, #2980B9);
+            color: white;
+            padding: 8px 15px;
+            border-radius: 10px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            min-width: 100px;
+            text-align: center;
+            box-shadow: 0 5px 10px rgba(0, 0, 0, 0.2);
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .score-label {
+            font-size: 0.8rem;
+            opacity: 0.9;
+            margin-bottom: 3px;
+        }
+        
+        .controls {
+            width: 100%;
+            max-width: 1000px;
+            display: flex;
+            justify-content: space-between;
+            margin-top: 10px;
+            padding: 0 10px;
+        }
+        
+        .control-btn {
+            background: linear-gradient(to bottom, #2ECC71, #27AE60);
+            border: none;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            flex: 1;
+            margin: 0 8px;
+        }
+        
+        .control-btn:active {
+            transform: translateY(5px);
+            box-shadow: 0 3px 8px rgba(0, 0, 0, 0.2);
+        }
+        
+        .control-btn.jump {
+            background: linear-gradient(to bottom, #E74C3C, #C0392B);
+        }
+        
+        .game-instructions {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(255, 255, 255, 0.98);
+            border-radius: 20px;
+            padding: 20px;
+            display: none;
+            flex-direction: column;
+            align-items: center;
+            justify-content: flex-start;
+            z-index: 25;
+            overflow-y: auto;
+            overflow-x: hidden;
+        }
+        
+        .game-instructions h3 {
+            color: #2C3E50;
+            margin-bottom: 20px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+            font-size: 2rem;
+            text-align: center;
+        }
+        
+        .instructions-content {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 600px;
+            margin: 15px 0;
+        }
+        
+        .instruction-item {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            font-size: 1rem;
+            padding: 8px;
+            background: rgba(52, 152, 219, 0.1);
+            border-radius: 10px;
+        }
+        
+        .instruction-item i {
+            color: #3498DB;
+            font-size: 1.2rem;
+            min-width: 35px;
+            text-align: center;
+        }
+        
+        .instruction-category {
+            font-size: 1.3rem;
+            color: #2C3E50;
+            margin-top: 20px;
+            margin-bottom: 8px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #3498DB;
+        }
+        
+        .game-over-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.9);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 10;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .game-over-title {
+            font-size: 2.5rem;
+            color: #E74C3C;
+            margin-bottom: 15px;
+            text-shadow: 0 0 10px rgba(231, 76, 60, 0.7);
+        }
+        
+        .final-score-container {
+            display: flex;
+            flex-direction: column;
+            gap: 15px;
+            width: 100%;
+            max-width: 500px;
+            margin: 15px 0;
+        }
+        
+        .final-score {
+            font-size: 1.8rem;
+            margin: 10px 0;
+            color: #F1C40F;
+        }
+        
+        .restart-btn {
+            background: linear-gradient(to bottom, #2ECC71, #27AE60);
+            border: none;
+            color: white;
+            padding: 15px 30px;
+            border-radius: 50px;
+            font-size: 1.3rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .restart-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .game-start-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(to bottom, #1a2980, #26d0ce);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 20;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            overflow-y: auto;
+        }
+        
+        .game-logo {
+            font-size: 3.5rem;
+            margin-bottom: 15px;
+            color: #F1C40F;
+            text-shadow: 0 0 15px rgba(241, 196, 15, 0.7);
+        }
+        
+        .start-btn {
+            background: linear-gradient(to bottom, #E74C3C, #C0392B);
+            border: none;
+            color: white;
+            padding: 18px 40px;
+            border-radius: 50px;
+            font-size: 1.5rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 15px 30px rgba(0, 0, 0, 0.4);
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 12px;
+        }
+        
+        .start-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .menu-buttons {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+            margin-top: 25px;
+            width: 90%;
+            max-width: 350px;
+        }
+        
+        .menu-btn {
+            background: linear-gradient(to bottom, #3498DB, #2980B9);
+            border: none;
+            color: white;
+            padding: 15px 25px;
+            border-radius: 50px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.3);
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+        }
+        
+        .menu-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .menu-btn.instructions {
+            background: linear-gradient(to bottom, #9B59B6, #8E44AD);
+        }
+        
+        .back-btn {
+            background: linear-gradient(to bottom, #95A5A6, #7F8C8D);
+            border: none;
+            color: white;
+            padding: 12px 25px;
+            border-radius: 50px;
+            font-size: 1rem;
+            font-weight: bold;
+            cursor: pointer;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.2);
+            margin-top: 20px;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        
+        .back-btn:hover {
+            transform: scale(1.05);
+        }
+        
+        .mobile-controls {
+            display: none;
+            position: absolute;
+            bottom: 20px;
+            width: 100%;
+            justify-content: space-around;
+            padding: 0 20px;
+            z-index: 5;
+        }
+        
+        .mobile-btn {
+            width: 70px;
+            height: 70px;
+            border-radius: 50%;
+            background: rgba(255, 255, 255, 0.7);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 1.8rem;
+            color: #2C3E50;
+            box-shadow: 0 8px 15px rgba(0, 0, 0, 0.3);
+            user-select: none;
+            -webkit-user-select: none;
+        }
+        
+        @media (max-width: 1024px) {
+            .game-container {
+                height: calc(100vh - 140px);
+            }
+            
+            .game-header {
+                padding: 10px 15px;
+                margin-bottom: 8px;
+            }
+            
+            .game-title {
+                font-size: 1.6rem;
+            }
+            
+            .score-box {
+                padding: 7px 12px;
+                font-size: 1.3rem;
+                min-width: 85px;
+            }
+        }
+        
+        @media (max-width: 768px) {
+            body {
+                padding: 5px;
+            }
+            
+            .game-container {
+                height: calc(100vh - 120px);
+                min-height: 400px;
+            }
+            
+            .game-header {
+                padding: 8px 12px;
+                margin-bottom: 5px;
+            }
+            
+            .game-title {
+                font-size: 1.4rem;
+                margin-bottom: 5px;
+            }
+            
+            .score-box {
+                padding: 6px 10px;
+                font-size: 1.2rem;
+                min-width: 75px;
+            }
+            
+            .controls {
+                display: none;
+            }
+            
+            .mobile-controls {
+                display: flex;
+            }
+            
+            .game-instructions {
+                padding: 15px;
+            }
+            
+            .instruction-item {
+                font-size: 0.9rem;
+            }
+            
+            .instruction-category {
+                font-size: 1.1rem;
+            }
+            
+            .game-instructions h3 {
+                font-size: 1.8rem;
+            }
+            
+            .game-over-title {
+                font-size: 2rem;
+            }
+            
+            .final-score {
+                font-size: 1.5rem;
+            }
+            
+            .game-logo {
+                font-size: 3rem;
+            }
+            
+            .start-btn, .restart-btn, .menu-btn {
+                padding: 12px 25px;
+                font-size: 1.2rem;
+            }
+            
+            .mobile-btn {
+                width: 65px;
+                height: 65px;
+                font-size: 1.6rem;
+            }
+            
+            .back-btn {
+                padding: 10px 20px;
+                font-size: 0.9rem;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .game-container {
+                height: calc(100vh - 110px);
+                min-height: 350px;
+            }
+            
+            .game-title {
+                font-size: 1.2rem;
+                width: 100%;
+                justify-content: center;
+                margin-bottom: 8px;
+            }
+            
+            .score-container {
+                justify-content: center;
+                width: 100%;
+            }
+            
+            .score-box {
+                font-size: 1.1rem;
+                min-width: 70px;
+                padding: 5px 8px;
+            }
+            
+            .game-logo {
+                font-size: 2.5rem;
+            }
+            
+            .start-btn, .restart-btn, .menu-btn {
+                padding: 10px 20px;
+                font-size: 1.1rem;
+            }
+            
+            .mobile-btn {
+                width: 60px;
+                height: 60px;
+                font-size: 1.5rem;
+            }
+            
+            .back-btn {
+                padding: 8px 16px;
+                font-size: 0.9rem;
+            }
+            
+            .game-over-title {
+                font-size: 1.8rem;
+            }
+            
+            .final-score {
+                font-size: 1.3rem;
+            }
+        }
+        
+        @media (max-height: 700px) {
+            .game-container {
+                height: calc(100vh - 100px);
+            }
+            
+            .game-start-screen h1 {
+                font-size: 1.5rem;
+            }
+            
+            .game-start-screen p {
+                font-size: 0.9rem;
+            }
+            
+            .game-logo {
+                font-size: 2.5rem;
+            }
+            
+            .menu-buttons {
+                margin-top: 15px;
+            }
+        }
+        
+        .pause-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.3rem;
+            cursor: pointer;
+            z-index: 5;
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .pause-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .pause-screen {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.85);
+            display: none;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 15;
+            color: white;
+            text-align: center;
+            padding: 20px;
+        }
+        
+        .pause-title {
+            font-size: 2.5rem;
+            color: #3498DB;
+            margin-bottom: 20px;
+        }
+        
+        .key-hint {
+            position: absolute;
+            bottom: 15px;
+            left: 15px;
+            color: rgba(255, 255, 255, 0.7);
+            font-size: 0.8rem;
+            background: rgba(0, 0, 0, 0.5);
+            padding: 6px 10px;
+            border-radius: 8px;
+            display: none;
+        }
+        
+        @media (min-width: 769px) {
+            .key-hint {
+                display: block;
+            }
+        }
+        
+        .difficulty-indicator {
+            position: absolute;
+            top: 15px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            z-index: 5;
+        }
+        
+        .altitude-indicator {
+            position: absolute;
+            top: 50px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            z-index: 5;
+        }
+        
+        .home-btn {
+            position: absolute;
+            top: 15px;
+            right: 70px;
+            background: rgba(255, 255, 255, 0.2);
+            border: none;
+            width: 45px;
+            height: 45px;
+            border-radius: 50%;
+            color: white;
+            font-size: 1.3rem;
+            cursor: pointer;
+            z-index: 5;
+            backdrop-filter: blur(5px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        
+        .home-btn:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+        
+        .jump-indicator {
+            position: absolute;
+            top: 85px;
+            left: 15px;
+            background: rgba(0, 0, 0, 0.5);
+            color: white;
+            padding: 6px 12px;
+            border-radius: 8px;
+            font-size: 0.8rem;
+            z-index: 5;
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+        
+        @media (max-height: 600px) {
+            .difficulty-indicator, .altitude-indicator, .jump-indicator {
+                font-size: 0.7rem;
+                padding: 4px 8px;
+            }
+            
+            .difficulty-indicator {
+                top: 10px;
+            }
+            
+            .altitude-indicator {
+                top: 40px;
+            }
+            
+            .jump-indicator {
+                top: 70px;
+            }
+            
+            .home-btn, .pause-btn {
+                top: 10px;
+                width: 40px;
+                height: 40px;
+                font-size: 1.2rem;
+            }
+            
+            .home-btn {
+                right: 60px;
+            }
+        }
+        
+        .game-description {
+            font-size: 1rem;
+            margin: 10px 20px;
+            line-height: 1.4;
+            max-width: 600px;
+        }
+        
+        @media (max-width: 768px) {
+            .game-description {
+                font-size: 0.9rem;
+                margin: 8px 15px;
+            }
+        }
+        
+        @media (max-width: 480px) {
+            .game-description {
+                font-size: 0.85rem;
+                margin: 6px 10px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="game-header">
+        <div class="game-title">
+            <i class="fas fa-snowflake"></i>
+            滑雪大冒险
+        </div>
+        <div class="score-container">
+            <div class="score-box">
+                <div class="score-label">距离</div>
+                <div id="distance">0 m</div>
+            </div>
+            <div class="score-box">
+                <div class="score-label">分数</div>
+                <div id="score">0</div>
+            </div>
+            <div class="score-box">
+                <div class="score-label">速度</div>
+                <div id="speed">0 km/h</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="game-container">
+        <button class="pause-btn" id="pauseBtn">
+            <i class="fas fa-pause"></i>
+        </button>
+        
+        <button class="home-btn" id="homeBtn">
+            <i class="fas fa-home"></i>
+        </button>
+        
+        <div class="difficulty-indicator" id="difficultyIndicator">
+            难度: <span id="difficultyLevel">初级</span>
+        </div>
+        
+        <div class="altitude-indicator" id="altitudeIndicator">
+            海拔: <span id="altitudeValue">3000</span> m
+        </div>
+        
+        <div class="jump-indicator" id="jumpIndicator">
+            <i class="fas fa-arrow-up"></i>
+            跳跃: <span id="jumpPowerValue">20</span>
+        </div>
+        
+        <canvas id="gameCanvas"></canvas>
+        
+        <div class="game-start-screen" id="startScreen">
+            <div class="game-logo">
+                <i class="fas fa-skiing"></i>
+            </div>
+            <h1>滑雪大冒险</h1>
+            <p class="game-description">从海拔3000米的高山之巅出发，穿越起伏雪坡，避开石头和雪堆，体验极速下滑的快感！</p>
+            
+            <div class="menu-buttons">
+                <button class="start-btn" id="startBtn">
+                    <i class="fas fa-play"></i>
+                    开始游戏
+                </button>
+                
+                <button class="menu-btn instructions" id="instructionsBtn">
+                    <i class="fas fa-info-circle"></i>
+                    游戏说明
+                </button>
+            </div>
+            
+            <div style="margin-top: 20px; font-size: 0.9rem; color: rgba(255,255,255,0.8);">
+                <p>电脑: 空格键跳跃 | Shift键加速</p>
+                <p>手机: 使用下方按钮控制</p>
+            </div>
+        </div>
+        
+        <div class="game-instructions" id="instructionsScreen">
+            <h3><i class="fas fa-info-circle"></i> 游戏说明</h3>
+            
+            <div class="instruction-category">游戏目标</div>
+            <div class="instructions-content">
+                <div class="instruction-item">
+                    <i class="fas fa-flag-checkered"></i>
+                    <span>尽可能滑行更远的距离，获得更高的分数</span>
+                </div>
+                <div class="instruction-item">
+                    <i class="fas fa-mountain"></i>
+                    <span>从海拔3000米的高山出发，向低海拔滑行</span>
+                </div>
+                <div class="instruction-item">
+                    <i class="fas fa-skull-crossbones"></i>
+                    <span>避开所有障碍物，不要从悬崖坠落</span>
+                </div>
+            </div>
+            
+            <div class="instruction-category">游戏控制</div>
+            <div class="instructions-content">
+                <div class="instruction-item">
+                    <i class="fas fa-keyboard"></i>
+                    <span><strong>电脑玩家：</strong> 空格键跳跃，Shift键加速</span>
+                </div>
+                <div class="instruction-item">
+                    <i class="fas fa-mobile-alt"></i>
+                    <span><strong>手机玩家：</strong> 使用屏幕下方按钮控制跳跃和加速</span>
+                </div>
+                <div class="instruction-item">
+                    <i class="fas fa-arrow-up" style="color: #E74C3C;"></i>
+                    <span><strong>跳跃增强：</strong> 跳跃高度已增加，更容易越过障碍物</span>
+                </div>
+            </div>
+            
+            <div class="instruction-category">游戏元素</div>
+            <div class="instructions-content">
+                <div class="instruction-item">
+                    <i class="fas fa-mountain" style="color: #8B4513;"></i>
+                    <span><strong>棕色石头：</strong> 碰到游戏结束</span>
+                </div>
+                <div class="instruction-item">
+                    <i class="fas fa-snowflake" style="color: #7F8C8D;"></i>
+                    <span><strong>灰色雪堆：</strong> 碰到游戏结束</span>
+                </div>
+                <div class="instruction-item">
+                    <i class="fas fa-star" style="color: #F1C40F;"></i>
+                    <span><strong>黄色星星：</strong> 收集获得100分</span>
+                </div>
+                <div class="instruction-item">
+                    <i class="fas fa-bolt" style="color: #2ECC71;"></i>
+                    <span><strong>绿色箭头：</strong> 获得短暂加速效果</span>
+                </div>
+                <div class="instruction-item">
+                    <i class="fas fa-trophy" style="color: #3498DB;"></i>
+                    <span><strong>蓝色P标志：</strong> 收集获得200分</span>
+                </div>
+            </div>
+            
+            <div class="instruction-category">游戏特性</div>
+            <div class="instructions-content">
+                <div class="instruction-item">
+                    <i class="fas fa-tachometer-alt"></i>
+                    <span>速度会随时间逐渐加快，最高可达180km/h</span>
+                </div>
+                <div class="instruction-item">
+                    <i class="fas fa-arrow-down"></i>
+                    <span>从高海拔向低海拔滑行时速度会更快</span>
+                </div>
+                <div class="instruction-item">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <span>注意起伏地形，可能会从悬崖坠落</span>
+                </div>
+                <div class="instruction-item">
+                    <i class="fas fa-arrow-up" style="color: #E74C3C;"></i>
+                    <span><strong>增强跳跃：</strong> 跳跃高度大幅增加，更容易躲避障碍</span>
+                </div>
+            </div>
+            
+            <button class="back-btn" id="backFromInstructionsBtn">
+                <i class="fas fa-arrow-left"></i>
+                返回主菜单
+            </button>
+        </div>
+        
+        <div class="game-over-screen" id="gameOverScreen">
+            <div class="game-over-title">游戏结束!</div>
+            <p id="gameOverReason">你撞到了障碍物</p>
+            
+            <div class="final-score-container">
+                <div class="final-score">得分: <span id="finalScore">0</span></div>
+                <div class="final-score">距离: <span id="finalDistance">0 m</span></div>
+                <div class="final-score">最高速度: <span id="finalSpeed">0 km/h</span></div>
+                <div class="final-score">最低海拔: <span id="finalAltitude">0 m</span></div>
+                <div class="final-score">难度: <span id="finalDifficulty">初级</span></div>
+            </div>
+            
+            <button class="restart-btn" id="restartBtn">
+                <i class="fas fa-redo"></i>
+                重新开始
+            </button>
+            <button class="back-btn" id="backToHomeBtn" style="margin-top: 15px;">
+                <i class="fas fa-home"></i>
+                返回主菜单
+            </button>
+        </div>
+        
+        <div class="pause-screen" id="pauseScreen">
+            <div class="pause-title">游戏暂停</div>
+            <p>点击按钮继续游戏</p>
+            <button class="restart-btn" id="resumeBtn" style="background: linear-gradient(to bottom, #3498DB, #2980B9);">
+                <i class="fas fa-play"></i>
+                继续游戏
+            </button>
+            <button class="back-btn" id="pauseToHomeBtn" style="margin-top: 15px;">
+                <i class="fas fa-home"></i>
+                返回主菜单
+            </button>
+        </div>
+        
+        <div class="key-hint">
+            键盘控制: 空格键跳跃 | Shift键加速
+        </div>
+    </div>
+    
+    <div class="mobile-controls">
+        <div class="mobile-btn" id="mobileJump">
+            <i class="fas fa-arrow-up"></i>
+        </div>
+        <div class="mobile-btn" id="mobileBoost">
+            <i class="fas fa-bolt"></i>
+        </div>
+    </div>
+    
+    <div class="controls">
+        <button class="control-btn jump" id="jumpBtn">
+            <i class="fas fa-arrow-up"></i>
+            跳跃 (空格键)
+        </button>
+        <button class="control-btn" id="boostBtn">
+            <i class="fas fa-bolt"></i>
+            加速 (Shift键)
+        </button>
+    </div>
+
+    <script>
+        // 游戏主逻辑
+        document.addEventListener('DOMContentLoaded', function() {
+            // 获取Canvas和上下文
+            const canvas = document.getElementById('gameCanvas');
+            const ctx = canvas.getContext('2d');
+            
+            // 设置Canvas尺寸
+            function resizeCanvas() {
+                canvas.width = canvas.clientWidth;
+                canvas.height = canvas.clientHeight;
+            }
+            
+            resizeCanvas();
+            window.addEventListener('resize', resizeCanvas);
+            
+            // 游戏状态
+            const gameState = {
+                isRunning: false,
+                isPaused: false,
+                isGameOver: false,
+                distance: 0,
+                score: 0,
+                speed: 4, // 初始速度6
+                baseSpeed: 4,
+                minSpeed: 4,
+                maxSpeed: 50,
+                gameTime: 0,
+                difficulty: 1, // 难度级别，影响速度增长
+                difficultyLevels: ['初级', '中级', '高级', '专家', '大师'],
+                isBoosting: false,
+                boostTime: 0,
+                boostDuration: 2,
+                lastTimestamp: 0,
+                highestSpeed: 0,
+                startingAltitude: 3000, // 起始海拔
+                currentAltitude: 3000,  // 当前海拔
+                lowestAltitude: 3000,   // 最低到达海拔
+                fallFromCliff: false,   // 是否从悬崖坠落
+                jumpPowerValue: 25      // 跳跃力度显示值
+            };
+            
+            // 玩家对象
+            const player = {
+                x: 100,
+                y: 300,
+                width: 60,
+                height: 60,
+                velocityY: 0,
+                gravity: 1, // 保持适当重力
+                jumpPower: -20, // 进一步增加跳跃高度（从-18增加到-20）
+                isJumping: false,
+                color: '#3498DB',
+                trail: [],
+                rotation: 0, // 用于滑雪板旋转
+                isOnGround: true
+            };
+            
+            // 雪坡地面点数组
+            let groundPoints = [];
+            const groundSegmentLength = 20; // 地面点之间的水平距离
+            
+            // 障碍物数组
+            const obstacles = [];
+            // 道具数组
+            const powerUps = [];
+            
+            // 游戏元素尺寸（根据Canvas大小调整）
+            let obstacleWidth;
+            
+            // 更新元素尺寸
+            function updateElementSizes() {
+                obstacleWidth = canvas.width * 0.05;
+            }
+            
+            // 初始化雪坡地面 - 从高到低
+            function initGround() {
+                groundPoints = [];
+                
+                // 创建从高到低起伏的雪坡地面
+                let x = 0;
+                let baseAltitude = canvas.height * 0.3; // 起始高度较高
+                let y = baseAltitude;
+                
+                // 生成足够覆盖整个屏幕并预留一些的地面点
+                while (x < canvas.width * 2) {
+                    groundPoints.push({x, y, altitude: gameState.startingAltitude - (x / canvas.width) * 500});
+                    
+                    // 使用更大幅度的正弦波和噪声创建起伏地形
+                    const amplitude = canvas.height * 0.25; // 增加起伏幅度
+                    const frequency = 0.008; // 降低频率使起伏更平缓
+                    
+                    // 添加向下趋势
+                    const downwardTrend = (x / (canvas.width * 2)) * canvas.height * 0.4;
+                    
+                    // 计算下一个点的高度
+                    const wave = Math.sin(x * frequency) * amplitude * 0.7;
+                    const noise = Math.sin(x * 0.015 + gameState.gameTime) * amplitude * 0.4;
+                    
+                    y = baseAltitude + wave + noise + downwardTrend;
+                    
+                    // 确保高度在合理范围内
+                    y = Math.max(canvas.height * 0.2, Math.min(canvas.height * 0.9, y));
+                    
+                    x += groundSegmentLength;
+                }
+            }
+            
+            // 更新雪坡地面
+            function updateGround(speedFactor) {
+                // 移动地面点
+                for (let i = 0; i < groundPoints.length; i++) {
+                    groundPoints[i].x -= gameState.speed * speedFactor;
+                    // 更新海拔高度
+                    groundPoints[i].altitude = gameState.startingAltitude - (groundPoints[i].x / canvas.width) * 500;
+                }
+                
+                // 移除屏幕左侧之外的地面点
+                while (groundPoints.length > 0 && groundPoints[0].x < -groundSegmentLength) {
+                    groundPoints.shift();
+                }
+                
+                // 在右侧添加新的地面点
+                let lastPoint = groundPoints[groundPoints.length - 1];
+                while (lastPoint.x < canvas.width + groundSegmentLength * 5) {
+                    let newX = lastPoint.x + groundSegmentLength;
+                    
+                    // 使用更大幅度的正弦波和噪声创建起伏地形
+                    const amplitude = canvas.height * 0.25;
+                    const frequency = 0.008;
+                    
+                    // 添加向下趋势
+                    const downwardTrend = (newX / (canvas.width * 2)) * canvas.height * 0.4;
+                    
+                    // 计算新点的高度
+                    const wave = Math.sin(newX * frequency) * amplitude * 0.7;
+                    const noise = Math.sin(newX * 0.015 + gameState.gameTime) * amplitude * 0.4;
+                    
+                    let newY = canvas.height * 0.3 + wave + noise + downwardTrend;
+                    
+                    // 确保高度在合理范围内
+                    newY = Math.max(canvas.height * 0.2, Math.min(canvas.height * 0.9, newY));
+                    
+                    groundPoints.push({
+                        x: newX, 
+                        y: newY,
+                        altitude: gameState.startingAltitude - (newX / canvas.width) * 500
+                    });
+                    lastPoint = groundPoints[groundPoints.length - 1];
+                }
+                
+                // 更新当前海拔
+                if (groundPoints.length > 0) {
+                    const groundHeight = getGroundHeightAtX(player.x + player.width / 2);
+                    for (let i = 0; i < groundPoints.length - 1; i++) {
+                        if (groundPoints[i].x <= player.x && groundPoints[i+1].x >= player.x) {
+                            const t = (player.x - groundPoints[i].x) / (groundPoints[i+1].x - groundPoints[i].x);
+                            gameState.currentAltitude = groundPoints[i].altitude + (groundPoints[i+1].altitude - groundPoints[i].altitude) * t;
+                            gameState.currentAltitude = Math.max(0, gameState.currentAltitude);
+                            
+                            if (gameState.currentAltitude < gameState.lowestAltitude) {
+                                gameState.lowestAltitude = gameState.currentAltitude;
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+            
+            // 绘制雪坡地面
+            function drawGround() {
+                if (groundPoints.length < 2) return;
+                
+                // 绘制地面填充
+                ctx.beginPath();
+                ctx.moveTo(groundPoints[0].x, groundPoints[0].y);
+                
+                for (let i = 1; i < groundPoints.length; i++) {
+                    ctx.lineTo(groundPoints[i].x, groundPoints[i].y);
+                }
+                
+                // 完成地面多边形
+                ctx.lineTo(groundPoints[groundPoints.length - 1].x, canvas.height);
+                ctx.lineTo(groundPoints[0].x, canvas.height);
+                ctx.closePath();
+                
+                // 地面渐变 - 根据高度变化颜色
+                const groundGradient = ctx.createLinearGradient(0, canvas.height * 0.2, 0, canvas.height);
+                groundGradient.addColorStop(0, '#FFFFFF'); // 雪地顶部
+                groundGradient.addColorStop(0.3, '#F0F8FF'); // 雪地中部
+                groundGradient.addColorStop(0.7, '#B0C4DE'); // 雪地底部
+                groundGradient.addColorStop(1, '#87CEEB'); // 底部蓝色
+                
+                ctx.fillStyle = groundGradient;
+                ctx.fill();
+                
+                // 绘制地面线条
+                ctx.beginPath();
+                ctx.moveTo(groundPoints[0].x, groundPoints[0].y);
+                
+                for (let i = 1; i < groundPoints.length; i++) {
+                    ctx.lineTo(groundPoints[i].x, groundPoints[i].y);
+                }
+                
+                ctx.strokeStyle = 'rgba(255, 255, 255, 0.8)';
+                ctx.lineWidth = 3;
+                ctx.stroke();
+                
+                // 绘制雪地纹理
+                for (let i = 0; i < groundPoints.length - 1; i += 2) {
+                    const point = groundPoints[i];
+                    if (point.x >= -50 && point.x <= canvas.width + 50) {
+                        // 绘制雪地凹凸纹理
+                        const segmentLength = Math.sqrt(
+                            Math.pow(groundPoints[i+1].x - point.x, 2) + 
+                            Math.pow(groundPoints[i+1].y - point.y, 2)
+                        );
+                        
+                        const segments = Math.floor(segmentLength / 20);
+                        
+                        for (let j = 0; j < segments; j++) {
+                            const t = j / segments;
+                            const segX = point.x + (groundPoints[i+1].x - point.x) * t;
+                            const segY = point.y + (groundPoints[i+1].y - point.y) * t;
+                            
+                            // 绘制一些小雪堆
+                            ctx.beginPath();
+                            ctx.arc(segX, segY, 2 + Math.random() * 3, 0, Math.PI * 2);
+                            ctx.fillStyle = `rgba(255, 255, 255, ${0.7 + Math.random() * 0.3})`;
+                            ctx.fill();
+                        }
+                    }
+                }
+                
+                // 绘制悬崖边缘效果
+                for (let i = 0; i < groundPoints.length - 1; i++) {
+                    const p1 = groundPoints[i];
+                    const p2 = groundPoints[i+1];
+                    
+                    // 检查是否有陡峭的下降
+                    const slope = (p2.y - p1.y) / (p2.x - p1.x);
+                    
+                    if (slope > 0.5) { // 陡峭的上升
+                        // 绘制悬崖阴影
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.lineTo(p2.x, p2.y + 20);
+                        ctx.lineTo(p1.x, p1.y + 20);
+                        ctx.closePath();
+                        
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                        ctx.fill();
+                    } else if (slope < -0.5) { // 陡峭的下降
+                        // 绘制悬崖阴影
+                        ctx.beginPath();
+                        ctx.moveTo(p1.x, p1.y);
+                        ctx.lineTo(p2.x, p2.y);
+                        ctx.lineTo(p2.x, p2.y + 10);
+                        ctx.lineTo(p1.x, p1.y + 10);
+                        ctx.closePath();
+                        
+                        ctx.fillStyle = 'rgba(0, 0, 0, 0.15)';
+                        ctx.fill();
+                    }
+                }
+            }
+            
+            // 根据x坐标获取地面高度
+            function getGroundHeightAtX(x) {
+                if (groundPoints.length < 2) return canvas.height * 0.7;
+                
+                // 找到x坐标所在的地面线段
+                for (let i = 0; i < groundPoints.length - 1; i++) {
+                    const p1 = groundPoints[i];
+                    const p2 = groundPoints[i + 1];
+                    
+                    if (x >= p1.x && x <= p2.x) {
+                        // 线性插值计算高度
+                        const t = (x - p1.x) / (p2.x - p1.x);
+                        return p1.y + (p2.y - p1.y) * t;
+                    }
+                }
+                
+                // 如果x超出范围，返回最后一个点的高度
+                return groundPoints[groundPoints.length - 1].y;
+            }
+            
+            // 计算地面斜率
+            function getGroundSlopeAtX(x) {
+                if (groundPoints.length < 2) return 0;
+                
+                // 找到x坐标所在的地面线段
+                for (let i = 0; i < groundPoints.length - 1; i++) {
+                    const p1 = groundPoints[i];
+                    const p2 = groundPoints[i + 1];
+                    
+                    if (x >= p1.x && x <= p2.x) {
+                        // 计算斜率 (dy/dx)
+                        return (p2.y - p1.y) / (p2.x - p1.x);
+                    }
+                }
+                
+                return 0;
+            }
+            
+            // 检查玩家是否掉下悬崖
+            function checkCliffFall() {
+                // 获取玩家下方位置
+                const playerBottomX = player.x + player.width / 2;
+                const playerBottomY = player.y + player.height;
+                
+                // 获取玩家下方的地面高度
+                const groundHeight = getGroundHeightAtX(playerBottomX);
+                
+                // 如果玩家下方没有地面（掉下悬崖）
+                if (playerBottomY > groundHeight + 50) {
+                    return true;
+                }
+                
+                return false;
+            }
+            
+            // 背景元素
+            const background = {
+                mountains: [],
+                trees: [],
+                clouds: [],
+                // 初始化背景元素
+                init: function() {
+                    // 创建山脉
+                    this.mountains = [];
+                    for (let i = 0; i < 5; i++) {
+                        this.mountains.push({
+                            x: (canvas.width / 5) * i,
+                            y: canvas.height * 0.2 + i * 20,
+                            width: canvas.width / 3,
+                            height: canvas.height * 0.3,
+                            color: i % 2 === 0 ? '#5D6D7E' : '#7FB3D5',
+                            speed: 0.2 + i * 0.1
+                        });
+                    }
+                    
+                    // 创建树木
+                    this.trees = [];
+                    for (let i = 0; i < 20; i++) {
+                        const treeX = Math.random() * canvas.width * 2;
+                        const groundY = getGroundHeightAtX(treeX);
+                        
+                        // 只在合适的坡度上生成树木
+                        const slope = getGroundSlopeAtX(treeX);
+                        if (Math.abs(slope) < 0.3) { // 只在平缓的坡上生成树
+                            this.trees.push({
+                                x: treeX,
+                                y: groundY,
+                                width: 15 + Math.random() * 20,
+                                height: 40 + Math.random() * 50,
+                                color: '#27AE60',
+                                speed: 1 + Math.random() * 0.5
+                            });
+                        }
+                    }
+                    
+                    // 创建云朵
+                    this.clouds = [];
+                    for (let i = 0; i < 10; i++) {
+                        this.clouds.push({
+                            x: Math.random() * canvas.width * 1.5,
+                            y: Math.random() * (canvas.height * 0.3),
+                            width: 60 + Math.random() * 100,
+                            height: 30 + Math.random() * 40,
+                            color: 'rgba(255, 255, 255, 0.9)',
+                            speed: 0.3 + Math.random() * 0.4
+                        });
+                    }
+                },
+                // 更新背景元素
+                update: function(speedFactor) {
+                    // 更新山脉
+                    for (let mountain of this.mountains) {
+                        mountain.x -= mountain.speed * speedFactor;
+                        if (mountain.x + mountain.width < 0) {
+                            mountain.x = canvas.width;
+                        }
+                    }
+                    
+                    // 更新树木
+                    for (let tree of this.trees) {
+                        tree.x -= tree.speed * speedFactor;
+                        if (tree.x + tree.width < 0) {
+                            tree.x = canvas.width + Math.random() * canvas.width;
+                            // 更新树木的y坐标以适应地面
+                            tree.y = getGroundHeightAtX(tree.x);
+                            tree.height = 40 + Math.random() * 50;
+                        }
+                    }
+                    
+                    // 更新云朵
+                    for (let cloud of this.clouds) {
+                        cloud.x -= cloud.speed * speedFactor;
+                        if (cloud.x + cloud.width < 0) {
+                            cloud.x = canvas.width + Math.random() * canvas.width;
+                            cloud.y = Math.random() * (canvas.height * 0.3);
+                        }
+                    }
+                },
+                // 绘制背景
+                draw: function() {
+                    // 绘制天空
+                    const skyGradient = ctx.createLinearGradient(0, 0, 0, canvas.height);
+                    skyGradient.addColorStop(0, '#87CEEB');
+                    skyGradient.addColorStop(1, '#E0F6FF');
+                    ctx.fillStyle = skyGradient;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                    
+                    // 绘制远处山脉
+                    for (let mountain of this.mountains) {
+                        ctx.fillStyle = mountain.color;
+                        ctx.beginPath();
+                        ctx.moveTo(mountain.x, mountain.y + mountain.height);
+                        ctx.lineTo(mountain.x + mountain.width / 2, mountain.y);
+                        ctx.lineTo(mountain.x + mountain.width, mountain.y + mountain.height);
+                        ctx.closePath();
+                        ctx.fill();
+                        
+                        // 添加山脉纹理
+                        ctx.fillStyle = mountain.color === '#5D6D7E' ? '#34495E' : '#5DADE2';
+                        ctx.beginPath();
+                        ctx.moveTo(mountain.x + mountain.width * 0.3, mountain.y + mountain.height * 0.5);
+                        ctx.lineTo(mountain.x + mountain.width * 0.5, mountain.y + mountain.height * 0.3);
+                        ctx.lineTo(mountain.x + mountain.width * 0.7, mountain.y + mountain.height * 0.5);
+                        ctx.closePath();
+                        ctx.fill();
+                    }
+                    
+                    // 绘制云朵
+                    for (let cloud of this.clouds) {
+                        ctx.fillStyle = cloud.color;
+                        ctx.beginPath();
+                        ctx.ellipse(cloud.x + cloud.width/2, cloud.y + cloud.height/2, cloud.width/2, cloud.height/2, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                    
+                    // 绘制树木
+                    for (let tree of this.trees) {
+                        // 树干
+                        ctx.fillStyle = '#8B4513';
+                        ctx.fillRect(tree.x, tree.y - tree.height * 0.7, tree.width * 0.3, tree.height * 0.7);
+                        
+                        // 树冠
+                        ctx.fillStyle = tree.color;
+                        ctx.beginPath();
+                        ctx.ellipse(tree.x + tree.width * 0.15, tree.y - tree.height * 0.7, tree.width * 0.5, tree.height * 0.3, 0, 0, Math.PI * 2);
+                        ctx.fill();
+                    }
+                }
+            };
+            
+            // 初始化游戏
+            function initGame() {
+                // 重置游戏状态
+                gameState.isRunning = true;
+                gameState.isPaused = false;
+                gameState.isGameOver = false;
+                gameState.distance = 0;
+                gameState.score = 0;
+                gameState.speed = gameState.baseSpeed;
+                gameState.gameTime = 0;
+                gameState.difficulty = 1;
+                gameState.isBoosting = false;
+                gameState.boostTime = 0;
+                gameState.highestSpeed = 0;
+                gameState.currentAltitude = gameState.startingAltitude;
+                gameState.lowestAltitude = gameState.startingAltitude;
+                gameState.fallFromCliff = false;
+                gameState.jumpPowerValue = 20;
+                
+                // 更新跳跃指示器
+                updateJumpIndicator();
+                
+                // 重置玩家
+                player.x = canvas.width * 0.15;
+                const initialGroundHeight = getGroundHeightAtX(player.x);
+                player.y = initialGroundHeight - player.height;
+                player.velocityY = 0;
+                player.isJumping = false;
+                player.trail = [];
+                player.rotation = 0;
+                player.isOnGround = true;
+                
+                // 清空障碍物和道具
+                obstacles.length = 0;
+                powerUps.length = 0;
+                
+                // 初始化雪坡地面
+                initGround();
+                
+                // 初始化背景
+                background.init();
+                
+                // 更新UI
+                updateUI();
+                
+                // 隐藏所有界面，只显示游戏
+                document.getElementById('startScreen').style.display = 'none';
+                document.getElementById('instructionsScreen').style.display = 'none';
+                document.getElementById('gameOverScreen').style.display = 'none';
+                document.getElementById('pauseScreen').style.display = 'none';
+                
+                // 开始游戏循环
+                if (!gameState.isPaused) {
+                    gameState.lastTimestamp = 0;
+                    requestAnimationFrame(gameLoop);
+                }
+            }
+            
+            // 返回主菜单
+            function returnToMainMenu() {
+                gameState.isRunning = false;
+                gameState.isPaused = false;
+                gameState.isGameOver = false;
+                
+                // 显示开始界面，隐藏其他界面
+                document.getElementById('startScreen').style.display = 'flex';
+                document.getElementById('instructionsScreen').style.display = 'none';
+                document.getElementById('gameOverScreen').style.display = 'none';
+                document.getElementById('pauseScreen').style.display = 'none';
+            }
+            
+            // 显示操作说明
+            function showInstructions() {
+                document.getElementById('startScreen').style.display = 'none';
+                document.getElementById('instructionsScreen').style.display = 'flex';
+            }
+            
+            // 更新跳跃指示器
+            function updateJumpIndicator() {
+                const jumpIndicator = document.getElementById('jumpPowerValue');
+                if (jumpIndicator) {
+                    jumpIndicator.textContent = gameState.jumpPowerValue;
+                }
+            }
+            
+            // 生成障碍物 - 石头和雪堆
+            function generateObstacle() {
+                const groundHeight = getGroundHeightAtX(canvas.width);
+                const slope = getGroundSlopeAtX(canvas.width);
+                
+                // 只在平缓的坡上生成障碍物
+                if (Math.abs(slope) > 0.5) return;
+                
+                const types = [
+                    {width: obstacleWidth * 1.5, height: 40, color: '#8B4513', type: 'rock', isDestructive: true}, // 石头
+                    {width: obstacleWidth * 2, height: 30, color: '#7F8C8D', type: 'snowpile', isDestructive: true}, // 雪堆
+                    {width: obstacleWidth * 1.8, height: 35, color: '#A0522D', type: 'rock', isDestructive: true}, // 中型石头
+                    {width: obstacleWidth * 2.5, height: 25, color: '#B0C4DE', type: 'snowpile', isDestructive: true}, // 大型雪堆
+                ];
+                
+                const type = types[Math.floor(Math.random() * types.length)];
+                
+                obstacles.push({
+                    x: canvas.width,
+                    y: groundHeight - type.height,
+                    width: type.width,
+                    height: type.height,
+                    color: type.color,
+                    type: type.type,
+                    isDestructive: type.isDestructive,
+                    passed: false
+                });
+            }
+            
+            // 绘制石头
+            function drawRock(ctx, x, y, width, height, color) {
+                // 石头主体
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.ellipse(x + width/2, y + height/2, width/2, height/2, 0, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 石头纹理
+                ctx.fillStyle = color === '#8B4513' ? '#A0522D' : '#8B4513';
+                
+                // 随机绘制一些纹理点
+                for (let i = 0; i < 5; i++) {
+                    const texX = x + width * 0.2 + Math.random() * width * 0.6;
+                    const texY = y + height * 0.2 + Math.random() * height * 0.6;
+                    const texSize = 2 + Math.random() * 4;
+                    
+                    ctx.beginPath();
+                    ctx.arc(texX, texY, texSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // 石头阴影
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.2)';
+                ctx.beginPath();
+                ctx.ellipse(x + width/2 + 2, y + height/2 + 2, width/2, height/2, 0, 0, Math.PI * 2);
+                ctx.fill();
+            }
+            
+            // 绘制雪堆
+            function drawSnowpile(ctx, x, y, width, height, color) {
+                // 雪堆主体
+                ctx.fillStyle = color;
+                ctx.beginPath();
+                ctx.moveTo(x, y + height);
+                ctx.quadraticCurveTo(x + width/2, y, x + width, y + height);
+                ctx.closePath();
+                ctx.fill();
+                
+                // 雪堆纹理
+                ctx.fillStyle = '#FFFFFF';
+                
+                // 绘制雪堆上的雪块
+                for (let i = 0; i < 7; i++) {
+                    const snowX = x + width * 0.1 + Math.random() * width * 0.8;
+                    const snowY = y + height * 0.1 + Math.random() * height * 0.6;
+                    const snowSize = 3 + Math.random() * 5;
+                    
+                    ctx.beginPath();
+                    ctx.arc(snowX, snowY, snowSize, 0, Math.PI * 2);
+                    ctx.fill();
+                }
+                
+                // 雪堆阴影
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.1)';
+                ctx.beginPath();
+                ctx.moveTo(x + 2, y + height + 2);
+                ctx.quadraticCurveTo(x + width/2 + 2, y + 2, x + width + 2, y + height + 2);
+                ctx.closePath();
+                ctx.fill();
+            }
+            
+            // 生成道具
+            function generatePowerUp() {
+                const groundHeight = getGroundHeightAtX(canvas.width);
+                
+                const types = [
+                    {width: 30, height: 30, color: '#F1C40F', type: 'star', value: 100}, // 星星
+                    {width: 40, height: 40, color: '#2ECC71', type: 'boost', value: 0}, // 加速
+                    {width: 35, height: 35, color: '#3498DB', type: 'points', value: 200} // 高分道具
+                ];
+                
+                const type = types[Math.floor(Math.random() * types.length)];
+                
+                // 道具生成高度 - 根据地形调整
+                let powerUpY;
+                const slope = getGroundSlopeAtX(canvas.width);
+                
+                if (slope > 0.3) {
+                    // 上坡时，道具放低一点
+                    powerUpY = groundHeight - 80;
+                } else if (slope < -0.3) {
+                    // 下坡时，道具放高一点
+                    powerUpY = groundHeight - 150;
+                } else {
+                    // 平坡时，随机高度
+                    powerUpY = groundHeight - 100 - Math.random() * (canvas.height * 0.3);
+                }
+                
+                powerUps.push({
+                    x: canvas.width,
+                    y: powerUpY,
+                    width: type.width,
+                    height: type.height,
+                    color: type.color,
+                    type: type.type,
+                    value: type.value,
+                    collected: false
+                });
+            }
+            
+            // 更新游戏对象
+            function updateGameObjects(timestamp) {
+                if (!gameState.lastTimestamp) {
+                    gameState.lastTimestamp = timestamp;
+                }
+                
+                const deltaTime = (timestamp - gameState.lastTimestamp) / 16.67; // 标准化到60fps
+                gameState.lastTimestamp = timestamp;
+                
+                // 更新游戏时间
+                gameState.gameTime += deltaTime * 0.05; // 减慢游戏时间计数，使难度增长更平缓
+                
+                // 更新速度 - 随时间增加
+                // 使用指数增长公式使速度变化更明显
+                const timeFactor = Math.min(gameState.gameTime, 60); // 60秒后速度达到最大
+                const speedMultiplier = 1 + (timeFactor / 60) * 3; // 最大速度为基础速度的4倍
+                
+                gameState.baseSpeed = gameState.minSpeed + (gameState.maxSpeed - gameState.minSpeed) * (timeFactor / 60);
+                gameState.baseSpeed = Math.min(gameState.baseSpeed, gameState.maxSpeed);
+                
+                // 根据海拔调整速度 - 海拔越低，速度越快
+                const altitudeFactor = 1 + (gameState.startingAltitude - gameState.currentAltitude) / 1000;
+                gameState.baseSpeed *= altitudeFactor;
+                
+                // 更新难度级别
+                const prevDifficulty = gameState.difficulty;
+                gameState.difficulty = Math.floor(timeFactor / 12) + 1; // 每12秒增加一个难度级别
+                gameState.difficulty = Math.min(gameState.difficulty, gameState.difficultyLevels.length);
+                
+                if (prevDifficulty !== gameState.difficulty) {
+                    updateDifficultyIndicator();
+                }
+                
+                // 处理加速状态
+                if (gameState.isBoosting) {
+                    gameState.boostTime += deltaTime * 0.05;
+                    gameState.speed = gameState.baseSpeed * 1.8;
+                    
+                    if (gameState.boostTime >= gameState.boostDuration) {
+                        gameState.isBoosting = false;
+                        gameState.boostTime = 0;
+                    }
+                } else {
+                    gameState.speed = gameState.baseSpeed;
+                }
+                
+                // 记录最高速度
+                if (gameState.speed > gameState.highestSpeed) {
+                    gameState.highestSpeed = gameState.speed;
+                }
+                
+                // 更新距离
+                const speedFactor = gameState.speed / gameState.baseSpeed;
+                gameState.distance += gameState.speed * deltaTime * 0.1;
+                
+                // 更新雪坡地面
+                updateGround(speedFactor);
+                
+                // 更新玩家位置
+                const groundHeight = getGroundHeightAtX(player.x + player.width / 2);
+                const groundSlope = getGroundSlopeAtX(player.x + player.width / 2);
+                
+                // 调整重力以考虑坡度
+                const slopeGravityFactor = 1 + Math.abs(groundSlope) * 3;
+                player.velocityY += player.gravity * slopeGravityFactor * deltaTime;
+                player.y += player.velocityY * deltaTime;
+                
+                // 旋转玩家以适应坡度
+                player.rotation = Math.atan(groundSlope) * 0.5;
+                
+                // 检查玩家是否在地面上
+                const prevIsOnGround = player.isOnGround;
+                player.isOnGround = (player.y >= groundHeight - player.height - 5 && player.y <= groundHeight - player.height + 5);
+                
+                // 确保玩家站在地面上
+                if (player.y > groundHeight - player.height) {
+                    player.y = groundHeight - player.height;
+                    player.velocityY = 0;
+                    player.isJumping = false;
+                    
+                    // 在坡道上时给玩家一个小的速度加成
+                    if (groundSlope < -0.1) {
+                        gameState.speed += Math.abs(groundSlope) * 8;
+                    }
+                }
+                
+                // 检查是否从悬崖坠落
+                if (checkCliffFall()) {
+                    gameState.fallFromCliff = true;
+                    gameOver();
+                    return;
+                }
+                
+                // 添加玩家轨迹点
+                player.trail.push({x: player.x + player.width/2, y: player.y + player.height/2});
+                if (player.trail.length > 10) {
+                    player.trail.shift();
+                }
+                
+                // 更新背景
+                background.update(speedFactor);
+                
+                // 更新障碍物
+                for (let i = obstacles.length - 1; i >= 0; i--) {
+                    obstacles[i].x -= gameState.speed * deltaTime;
+                    
+                    // 更新障碍物的y坐标以适应地面
+                    const obstacleGroundHeight = getGroundHeightAtX(obstacles[i].x + obstacles[i].width / 2);
+                    obstacles[i].y = obstacleGroundHeight - obstacles[i].height;
+                    
+                    // 移除屏幕外的障碍物
+                    if (obstacles[i].x + obstacles[i].width < 0) {
+                        obstacles.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // 检查是否通过障碍物（加分）
+                    if (!obstacles[i].passed && obstacles[i].x + obstacles[i].width < player.x) {
+                        obstacles[i].passed = true;
+                        gameState.score += 50 * gameState.difficulty;
+                    }
+                    
+                    // 检测碰撞
+                    if (checkCollision(player, obstacles[i])) {
+                        if (obstacles[i].isDestructive) {
+                            gameOver();
+                            return;
+                        }
+                    }
+                }
+                
+                // 更新道具
+                for (let i = powerUps.length - 1; i >= 0; i--) {
+                    powerUps[i].x -= gameState.speed * deltaTime;
+                    
+                    // 更新道具的y坐标以适应地面（如果接近地面）
+                    if (powerUps[i].y > canvas.height * 0.6) {
+                        const powerUpGroundHeight = getGroundHeightAtX(powerUps[i].x + powerUps[i].width / 2);
+                        powerUps[i].y = powerUpGroundHeight - powerUps[i].height - 10;
+                    }
+                    
+                    // 移除屏幕外的道具
+                    if (powerUps[i].x + powerUps[i].width < 0) {
+                        powerUps.splice(i, 1);
+                        continue;
+                    }
+                    
+                    // 检测收集
+                    if (!powerUps[i].collected && checkCollision(player, powerUps[i])) {
+                        powerUps[i].collected = true;
+                        
+                        if (powerUps[i].type === 'star') {
+                            gameState.score += powerUps[i].value * gameState.difficulty;
+                        } else if (powerUps[i].type === 'boost') {
+                            gameState.isBoosting = true;
+                            gameState.boostTime = 0;
+                        } else if (powerUps[i].type === 'points') {
+                            gameState.score += powerUps[i].value * gameState.difficulty;
+                        }
+                        
+                        // 从数组中移除
+                        powerUps.splice(i, 1);
+                    }
+                }
+                
+                // 随机生成新障碍物（频率随难度增加）
+                const obstacleChance = 0.006 * deltaTime * gameState.difficulty;
+                if (Math.random() < obstacleChance) {
+                    generateObstacle();
+                }
+                
+                // 随机生成新道具
+                if (Math.random() < 0.004 * deltaTime) {
+                    generatePowerUp();
+                }
+                
+                // 更新UI
+                updateUI();
+            }
+            
+            // 更新难度指示器
+            function updateDifficultyIndicator() {
+                const difficultyElement = document.getElementById('difficultyLevel');
+                if (difficultyElement) {
+                    difficultyElement.textContent = gameState.difficultyLevels[gameState.difficulty - 1];
+                }
+            }
+            
+            // 更新海拔指示器
+            function updateAltitudeIndicator() {
+                const altitudeElement = document.getElementById('altitudeValue');
+                if (altitudeElement) {
+                    altitudeElement.textContent = Math.floor(gameState.currentAltitude);
+                }
+            }
+            
+            // 检查碰撞
+            function checkCollision(rect1, rect2) {
+                return rect1.x < rect2.x + rect2.width &&
+                       rect1.x + rect1.width > rect2.x &&
+                       rect1.y < rect2.y + rect2.height &&
+                       rect1.y + rect1.height > rect2.y;
+            }
+            
+            // 绘制游戏
+            function drawGame() {
+                // 清除画布
+                ctx.clearRect(0, 0, canvas.width, canvas.height);
+                
+                // 绘制背景
+                background.draw();
+                
+                // 绘制雪坡地面
+                drawGround();
+                
+                // 绘制玩家轨迹
+                if (player.trail.length > 1) {
+                    ctx.strokeStyle = 'rgba(52, 152, 219, 0.5)';
+                    ctx.lineWidth = 3;
+                    ctx.beginPath();
+                    ctx.moveTo(player.trail[0].x, player.trail[0].y);
+                    for (let i = 1; i < player.trail.length; i++) {
+                        ctx.lineTo(player.trail[i].x, player.trail[i].y);
+                    }
+                    ctx.stroke();
+                }
+                
+                // 保存画布状态
+                ctx.save();
+                
+                // 平移和旋转画布以绘制玩家
+                const playerCenterX = player.x + player.width / 2;
+                const playerCenterY = player.y + player.height / 2;
+                
+                ctx.translate(playerCenterX, playerCenterY);
+                ctx.rotate(player.rotation);
+                ctx.translate(-playerCenterX, -playerCenterY);
+                
+                // 绘制玩家
+                ctx.fillStyle = player.color;
+                ctx.fillRect(player.x, player.y, player.width, player.height);
+                
+                // 绘制玩家细节（滑雪者）
+                ctx.fillStyle = '#2C3E50';
+                // 头部
+                ctx.beginPath();
+                ctx.arc(player.x + player.width * 0.7, player.y + player.height * 0.3, player.width * 0.2, 0, Math.PI * 2);
+                ctx.fill();
+                
+                // 身体
+                ctx.fillRect(player.x + player.width * 0.5, player.y + player.height * 0.5, player.width * 0.4, player.height * 0.4);
+                
+                // 滑雪板
+                ctx.fillStyle = '#E74C3C';
+                ctx.fillRect(player.x - player.width * 0.1, player.y + player.height * 0.8, player.width * 1.2, player.height * 0.15);
+                
+                // 恢复画布状态
+                ctx.restore();
+                
+                // 绘制障碍物
+                for (let obstacle of obstacles) {
+                    if (obstacle.type === 'rock') {
+                        drawRock(ctx, obstacle.x, obstacle.y, obstacle.width, obstacle.height, obstacle.color);
+                    } else if (obstacle.type === 'snowpile') {
+                        drawSnowpile(ctx, obstacle.x, obstacle.y, obstacle.width, obstacle.height, obstacle.color);
+                    } else {
+                        ctx.fillStyle = obstacle.color;
+                        ctx.fillRect(obstacle.x, obstacle.y, obstacle.width, obstacle.height);
+                    }
+                }
+                
+                // 绘制道具
+                for (let powerUp of powerUps) {
+                    ctx.fillStyle = powerUp.color;
+                    
+                    if (powerUp.type === 'star') {
+                        // 绘制星星
+                        drawStar(ctx, powerUp.x + powerUp.width/2, powerUp.y + powerUp.height/2, 5, powerUp.width/2, powerUp.width/4);
+                    } else if (powerUp.type === 'boost') {
+                        // 绘制加速箭头
+                        ctx.beginPath();
+                        ctx.moveTo(powerUp.x + powerUp.width/2, powerUp.y);
+                        ctx.lineTo(powerUp.x + powerUp.width, powerUp.y + powerUp.height/2);
+                        ctx.lineTo(powerUp.x + powerUp.width/2, powerUp.y + powerUp.height);
+                        ctx.lineTo(powerUp.x + powerUp.width/2, powerUp.y + powerUp.height * 0.7);
+                        ctx.lineTo(powerUp.x, powerUp.y + powerUp.height * 0.7);
+                        ctx.lineTo(powerUp.x, powerUp.y + powerUp.height * 0.3);
+                        ctx.lineTo(powerUp.x + powerUp.width/2, powerUp.y + powerUp.height * 0.3);
+                        ctx.closePath();
+                        ctx.fill();
+                    } else if (powerUp.type === 'points') {
+                        // 绘制高分道具
+                        ctx.beginPath();
+                        ctx.arc(powerUp.x + powerUp.width/2, powerUp.y + powerUp.height/2, powerUp.width/2, 0, Math.PI * 2);
+                        ctx.fill();
+                        ctx.fillStyle = 'white';
+                        ctx.font = 'bold 18px Arial';
+                        ctx.textAlign = 'center';
+                        ctx.textBaseline = 'middle';
+                        ctx.fillText('P', powerUp.x + powerUp.width/2, powerUp.y + powerUp.height/2);
+                    }
+                }
+                
+                // 绘制加速效果
+                if (gameState.isBoosting) {
+                    ctx.fillStyle = `rgba(46, 204, 113, ${0.5 + 0.3 * Math.sin(gameState.gameTime * 10)})`;
+                    ctx.fillRect(0, 0, canvas.width, canvas.height);
+                }
+                
+                // 绘制速度线效果
+                if (gameState.speed > gameState.minSpeed * 1.5) {
+                    const speedLineCount = Math.floor(gameState.speed / 5);
+                    for (let i = 0; i < speedLineCount; i++) {
+                        const x = Math.random() * canvas.width;
+                        const y = Math.random() * canvas.height;
+                        const length = 10 + Math.random() * 20;
+                        const speed = gameState.speed / 20;
+                        
+                        ctx.beginPath();
+                        ctx.moveTo(x, y);
+                        ctx.lineTo(x - length * speed, y);
+                        ctx.strokeStyle = `rgba(255, 255, 255, ${0.3 + Math.random() * 0.3})`;
+                        ctx.lineWidth = 1 + Math.random() * 2;
+                        ctx.stroke();
+                    }
+                }
+                
+                // 绘制游戏信息
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.7)';
+                ctx.font = 'bold 14px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText(`距离: ${Math.floor(gameState.distance)}m`, canvas.width - 130, 25);
+                ctx.fillText(`速度: ${Math.floor(gameState.speed * 3.6)}km/h`, canvas.width - 130, 50);
+                ctx.fillText(`分数: ${gameState.score}`, canvas.width - 130, 75);
+                ctx.fillText(`海拔: ${Math.floor(gameState.currentAltitude)}m`, canvas.width - 130, 100);
+                
+                // 绘制加速状态
+                if (gameState.isBoosting) {
+                    ctx.fillStyle = '#2ECC71';
+                    ctx.font = 'bold 18px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`加速中! ${(gameState.boostDuration - gameState.boostTime).toFixed(1)}s`, canvas.width/2, 30);
+                }
+                
+                // 绘制速度计
+                const speedPercentage = (gameState.speed - gameState.minSpeed) / (gameState.maxSpeed - gameState.minSpeed);
+                const speedBarWidth = 180;
+                const speedBarHeight = 8;
+                const speedBarX = 20;
+                const speedBarY = 30;
+                
+                // 速度条背景
+                ctx.fillStyle = 'rgba(0, 0, 0, 0.5)';
+                ctx.fillRect(speedBarX, speedBarY, speedBarWidth, speedBarHeight);
+                
+                // 速度条填充
+                const gradient = ctx.createLinearGradient(speedBarX, speedBarY, speedBarX + speedBarWidth, speedBarY);
+                gradient.addColorStop(0, '#2ECC71');
+                gradient.addColorStop(0.5, '#F1C40F');
+                gradient.addColorStop(1, '#E74C3C');
+                
+                ctx.fillStyle = gradient;
+                ctx.fillRect(speedBarX, speedBarY, speedBarWidth * speedPercentage, speedBarHeight);
+                
+                // 速度条边框
+                ctx.strokeStyle = 'white';
+                ctx.lineWidth = 2;
+                ctx.strokeRect(speedBarX, speedBarY, speedBarWidth, speedBarHeight);
+                
+                // 速度标签
+                ctx.fillStyle = 'white';
+                ctx.font = 'bold 12px Arial';
+                ctx.textAlign = 'left';
+                ctx.fillText('速度计', speedBarX, speedBarY - 5);
+                
+                // 绘制跳跃高度提示
+                if (player.isOnGround && !gameState.isBoosting) {
+                    ctx.fillStyle = 'rgba(231, 76, 60, 0.8)';
+                    ctx.font = 'bold 14px Arial';
+                    ctx.textAlign = 'center';
+                    ctx.fillText(`跳跃高度: ${gameState.jumpPowerValue}`, canvas.width/2, canvas.height - 30);
+                }
+            }
+            
+            // 绘制星星函数
+            function drawStar(ctx, cx, cy, spikes, outerRadius, innerRadius) {
+                let rot = Math.PI / 2 * 3;
+                let x = cx;
+                let y = cy;
+                let step = Math.PI / spikes;
+                
+                ctx.beginPath();
+                ctx.moveTo(cx, cy - outerRadius);
+                
+                for (let i = 0; i < spikes; i++) {
+                    x = cx + Math.cos(rot) * outerRadius;
+                    y = cy + Math.sin(rot) * outerRadius;
+                    ctx.lineTo(x, y);
+                    rot += step;
+                    
+                    x = cx + Math.cos(rot) * innerRadius;
+                    y = cy + Math.sin(rot) * innerRadius;
+                    ctx.lineTo(x, y);
+                    rot += step;
+                }
+                
+                ctx.lineTo(cx, cy - outerRadius);
+                ctx.closePath();
+                ctx.fill();
+            }
+            
+            // 游戏循环
+            function gameLoop(timestamp) {
+                if (!gameState.isRunning || gameState.isPaused) return;
+                
+                updateGameObjects(timestamp);
+                
+                if (gameState.isGameOver) return;
+                
+                drawGame();
+                
+                requestAnimationFrame(gameLoop);
+            }
+            
+            // 更新UI
+            function updateUI() {
+                document.getElementById('distance').textContent = Math.floor(gameState.distance) + ' m';
+                document.getElementById('score').textContent = gameState.score;
+                document.getElementById('speed').textContent = Math.floor(gameState.speed * 3.6) + ' km/h';
+                updateAltitudeIndicator();
+                updateJumpIndicator();
+                updateDifficultyIndicator();
+            }
+            
+            // 游戏结束
+            function gameOver() {
+                gameState.isRunning = false;
+                gameState.isGameOver = true;
+                
+                // 设置游戏结束原因
+                const reasonElement = document.getElementById('gameOverReason');
+                if (gameState.fallFromCliff) {
+                    reasonElement.textContent = '你掉下了悬崖!';
+                } else {
+                    reasonElement.textContent = '你撞到了障碍物!';
+                }
+                
+                // 显示游戏结束屏幕
+                document.getElementById('finalScore').textContent = gameState.score;
+                document.getElementById('finalDistance').textContent = Math.floor(gameState.distance) + ' m';
+                document.getElementById('finalSpeed').textContent = Math.floor(gameState.highestSpeed * 3.6) + ' km/h';
+                document.getElementById('finalAltitude').textContent = Math.floor(gameState.lowestAltitude) + ' m';
+                document.getElementById('finalDifficulty').textContent = gameState.difficultyLevels[gameState.difficulty - 1];
+                document.getElementById('gameOverScreen').style.display = 'flex';
+            }
+            
+            // 跳跃功能
+            function jump() {
+                if (!gameState.isRunning || gameState.isPaused) return;
+                
+                // 只有当玩家在地面上时才能跳跃
+                if (player.isOnGround) {
+                    player.velocityY = player.jumpPower * (1 + gameState.speed / gameState.maxSpeed * 0.5);
+                    player.isJumping = true;
+                    player.isOnGround = false;
+                    
+                    // 跳跃特效
+                    createJumpEffect();
+                }
+            }
+            
+            // 创建跳跃特效
+            function createJumpEffect() {
+                // 可以在玩家位置创建粒子效果
+                for (let i = 0; i < 5; i++) {
+                    setTimeout(() => {
+                        if (gameState.isRunning) {
+                            // 跳跃时创建雪花粒子
+                            const particle = {
+                                x: player.x + player.width/2,
+                                y: player.y + player.height,
+                                size: 2 + Math.random() * 4,
+                                speedX: -2 + Math.random() * 4,
+                                speedY: -3 - Math.random() * 3,
+                                life: 1.0,
+                                color: 'rgba(255, 255, 255, 0.8)'
+                            };
+                            
+                            // 这里可以添加粒子效果，为了简化，暂时不实现
+                        }
+                    }, i * 50);
+                }
+            }
+            
+            // 加速功能
+            function startBoost() {
+                if (!gameState.isRunning || gameState.isPaused) return;
+                
+                gameState.isBoosting = true;
+                gameState.boostTime = 0;
+            }
+            
+            function stopBoost() {
+                gameState.isBoosting = false;
+                gameState.boostTime = 0;
+            }
+            
+            // 暂停/恢复游戏
+            function togglePause() {
+                if (gameState.isGameOver) return;
+                
+                gameState.isPaused = !gameState.isPaused;
+                
+                if (gameState.isPaused) {
+                    document.getElementById('pauseScreen').style.display = 'flex';
+                } else {
+                    document.getElementById('pauseScreen').style.display = 'none';
+                    if (gameState.isRunning) {
+                        requestAnimationFrame(gameLoop);
+                    }
+                }
+            }
+            
+            // 事件监听器
+            // 键盘控制
+            document.addEventListener('keydown', function(e) {
+                if (e.code === 'Space') {
+                    e.preventDefault();
+                    jump();
+                } else if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+                    e.preventDefault();
+                    startBoost();
+                } else if (e.code === 'KeyP' || e.code === 'Escape') {
+                    togglePause();
+                }
+            });
+            
+            document.addEventListener('keyup', function(e) {
+                if (e.code === 'ShiftLeft' || e.code === 'ShiftRight') {
+                    stopBoost();
+                }
+            });
+            
+            // 按钮控制
+            document.getElementById('jumpBtn').addEventListener('click', jump);
+            document.getElementById('boostBtn').addEventListener('mousedown', startBoost);
+            document.getElementById('boostBtn').addEventListener('mouseup', stopBoost);
+            document.getElementById('boostBtn').addEventListener('mouseleave', stopBoost);
+            
+            // 移动端触摸控制
+            document.getElementById('mobileJump').addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                jump();
+            });
+            
+            let boostTouchId = null;
+            document.getElementById('mobileBoost').addEventListener('touchstart', function(e) {
+                e.preventDefault();
+                startBoost();
+                boostTouchId = e.changedTouches[0].identifier;
+            });
+            
+            document.getElementById('mobileBoost').addEventListener('touchend', function(e) {
+                for (let touch of e.changedTouches) {
+                    if (touch.identifier === boostTouchId) {
+                        stopBoost();
+                        boostTouchId = null;
+                        break;
+                    }
+                }
+            });
+            
+            // 游戏控制按钮
+            document.getElementById('startBtn').addEventListener('click', function() {
+                updateElementSizes();
+                initGame();
+            });
+            
+            document.getElementById('instructionsBtn').addEventListener('click', showInstructions);
+            document.getElementById('backFromInstructionsBtn').addEventListener('click', returnToMainMenu);
+            document.getElementById('backToHomeBtn').addEventListener('click', returnToMainMenu);
+            document.getElementById('pauseToHomeBtn').addEventListener('click', returnToMainMenu);
+            document.getElementById('homeBtn').addEventListener('click', returnToMainMenu);
+            
+            document.getElementById('restartBtn').addEventListener('click', function() {
+                updateElementSizes();
+                initGame();
+            });
+            
+            document.getElementById('pauseBtn').addEventListener('click', togglePause);
+            document.getElementById('resumeBtn').addEventListener('click', togglePause);
+            
+            // 防止上下文菜单
+            canvas.addEventListener('contextmenu', function(e) {
+                e.preventDefault();
+            });
+            
+            // 初始调整尺寸
+            updateElementSizes();
+            initGround();
+            background.init();
+            
+            // 初始绘制
+            drawGame();
+        });
+    </script>
+</body>
+</html>
